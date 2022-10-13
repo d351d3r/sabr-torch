@@ -1,10 +1,25 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(sabr-torch)
 
-find_package(Torch REQUIRED)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
-add_executable(sabr-torch main.cpp)
+set(Torch_DIR "/Users/anatolii/project/cpp/sabr-torch/lib/libtorch;${Torch_DIR}")
+set(DCMAKE_PREFIX_PATH "/Users/anatolii/project/cpp/sabr-torch/lib/libtorch;${DCMAKE_PREFIX_PATH}")
+
+include_directories(lib/libtorch/include)
+
+list(
+        APPEND
+        CMAKE_PREFIX_PATH
+        ./lib/libtorch)
+
+find_package(Torch REQUIRED)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE_INIT "-O2")
+
+
+add_executable(sabr-torch src/main.cpp)
 target_link_libraries(sabr-torch "${TORCH_LIBRARIES}")
 set_property(TARGET sabr-torch PROPERTY CXX_STANDARD 14)
 
