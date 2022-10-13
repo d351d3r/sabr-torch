@@ -31,19 +31,25 @@ mounts:
     writable: true
 ```
 
-# Run Lima with author's config 
+### Run Lima with author's config 
 ```bash 
 $ limactl start --name=default etc/lima-default.yaml
 ```
 
-# Go to the working directory via Lima:
+### Go to the working directory via Lima:
 
 ```shell
 $ lima
 ```
+### Install dependencies:
+`$ sudo apt install gcc g++ make cmake`
+
+
+### Build 
 
 ```shell
 
+### Build 
 $ mkdir build
 $ cd build
 $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
