@@ -9,7 +9,7 @@ $ unzip libtorch-shared-with-deps-latest.zip
 ```shell
 $ mkdir build
 $ cd build
-$ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+$ cmake -DCMAKE_PREFIX_PATH=./libtorch ..
 $ cmake --build . --config Release
 ```
 ### Build in Mac M1 with [Lima](https://github.com/lima-vm/lima)
@@ -27,8 +27,8 @@ Please note that the author's configs from the container have full access to the
 ```yaml
 mounts:
 - location: "~/project/"
-    mountPoint: "/project"
-    writable: true
+  mountPoint: "/project"
+  writable: true
 ```
 
 ### Run Lima with author's config:
@@ -42,7 +42,9 @@ $ limactl start --name=default etc/lima-default.yaml
 $ lima
 ```
 ### Install dependencies:
-`$ sudo apt install gcc g++ make cmake`
+```shell 
+$ sudo apt install -y gcc g++ make cmake
+````
 
 
 ### Build:
@@ -50,7 +52,11 @@ $ lima
 ```shell
 $ mkdir build
 $ cd build
-$ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+$ cmake -DCMAKE_PREFIX_PATH=./libtorch ..
 $ cmake --build . --config Release
 
+```
+### Run: 
+```shell
+$ ./sabr-torch
 ```
