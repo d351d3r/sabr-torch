@@ -12,6 +12,12 @@ $ cd build
 $ cmake -DCMAKE_PREFIX_PATH=./libtorch ..
 $ cmake --build . --config Release
 ```
+### Run: 
+```shell
+$ ./sabr-torch
+```
+
+
 ### Build in Mac M1 with [Lima](https://github.com/lima-vm/lima)
 
 #### Install Lima first with brew:
@@ -31,23 +37,23 @@ mounts:
   writable: true
 ```
 
-### Run Lima with author's config:
+#### Run Lima with author's config:
 ```bash 
 $ limactl start --name=default etc/lima-default.yaml
 ```
 
-### Go to the working directory via Lima:
+#### Go to the working directory via Lima:
 
 ```shell
 $ lima
 ```
-### Install dependencies:
+#### Install dependencies:
 ```shell 
 $ sudo apt install -y gcc g++ make cmake
 ````
 
 
-### Build:
+#### Build:
 
 ```shell
 $ mkdir build
@@ -56,7 +62,7 @@ $ cmake -DCMAKE_PREFIX_PATH=./libtorch ..
 $ cmake --build . --config Release
 
 ```
-### Run: 
+#### Run: 
 ```shell
 $ ./sabr-torch
 ```
