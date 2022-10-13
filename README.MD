@@ -31,7 +31,7 @@ mounts:
     writable: true
 ```
 
-### Run Lima with author's config 
+### Run Lima with author's config:
 ```bash 
 $ limactl start --name=default etc/lima-default.yaml
 ```
@@ -45,11 +45,9 @@ $ lima
 `$ sudo apt install gcc g++ make cmake`
 
 
-### Build 
+### Build:
 
 ```shell
-
-### Build 
 $ mkdir build
 $ cd build
 $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
