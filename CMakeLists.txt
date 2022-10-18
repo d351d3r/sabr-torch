@@ -19,7 +19,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE_INIT "-O2")
 
 
-add_executable(sabr-torch src/main.cpp src/LevenbergMarquad.cpp src/LevenbergMarquad.h src/LevenbergMarquad.h src/sigma_SABR.cpp src/sigma_SABR.h src/LevenbergMarquad.h src/LM.h src/LM.h)
+add_executable(sabr-torch src/main.cpp src/LevenbergMarquad.cpp src/LevenbergMarquad.h src/LevenbergMarquad.h src/sigma_SABR.cpp src/sigma_SABR.h src/LevenbergMarquad.h src/LM.h src/LM.h src/LM.h)
 target_link_libraries(sabr-torch "${TORCH_LIBRARIES}")
 set_property(TARGET sabr-torch PROPERTY CXX_STANDARD 14)
 
