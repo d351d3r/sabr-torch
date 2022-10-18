@@ -6,6 +6,10 @@
 
 #define POLY_DEGREE 4
 
+static constexpr long double f(t,p) {
+    return p[0] * torch.exp(-t / p[1]) + p[2] * t * torch.exp(-t / p[3])
+}
+
 // Builds features i.e. a matrix with columns [x, x^2, x^3, x^4].
 torch::Tensor make_features(torch::Tensor x) {
     x = x.unsqueeze(1);
