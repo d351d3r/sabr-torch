@@ -5,52 +5,51 @@
 class LevenbergMarquad {
 public:
     LevenbergMarquad(x,y,func) {
-        this.x = x;
-        this.y = y;
-        this.func = func;
+
+        int iter_n = 0;
+
+        // https://pytorch.org/cppdocs/api/function_namespaceat_1a095f3dd9bd82e1754ad607466e32d8e2.html?highlight=detach#_CPPv4N2at11detach_copyERKN2at6TensorE
+        // https://pytorch.org/cppdocs/api/classat_1_1_tensor.html?highlight=requires_grad_#_CPPv4NK2at6Tensor14requires_grad_Eb
+        int p = Tensor::detach_copy(p),torch::requires_grad();
+        {
+            torch::NoGradGuard no_grad;
+            double J = torch::autograd::functional::jacobian(func,p);
+        }
+        double W = torch::diag(torch::tensor([1 / pow(sigma,2)] * len(x)));
+        float lambda_lm = torch::tensor(lambda_lm);
+
+        double eps1 = torch::tensor(eps1);
+        double eps2 = torch::tensor(eps2);
+        double eps3 = torch::tensor(eps3);
+        double eps4 = torch.tensor(eps4);
+        double lm_up = torch.tensor(lm_up);
+        double lm_down = torch.tensor(lm_down);
 
     }
 
-    int iter_n = 0;
-    int p = p.detach().clone();
-    p = p.requires_grad_(True);
-    {
-        torch::NoGradGuard no_grad;
-        double J = torch.autograd.functional.jacobian(func,p);
-    }
-    double W = torch.diag(torch.tensor([1 / kwargs.get('sigma') ** 2] * len(x)));
-    float lambda_lm = torch.tensor(kwargs.get('lambda_lm'));
-
-    float eps1 = torch.tensor(kwargs.get('eps1'));
-    float eps2 = torch.tensor(kwargs.get('eps2'));
-    float eps3 = torch.tensor(kwargs.get('eps3')) ;
-    float eps4 = torch.tensor(kwargs.get('eps4'));
-    float lm_up = torch.tensor(kwargs.get('lm_up'));
-    float lm_down = torch.tensor(kwargs.get('lm_down'));
-
-
+// https://pytorch.org/cppdocs/api/typedef_namespacetorch_1abf2c764801b507b6a105664a2406a410.html?highlight=torch%20no_grad
     void broyden_jacobian_update() {
         torch::NoGradGuard no_grad;
 
         df = func(p + dp) - func(p);
-        J += torch.outer(df - torch.mv(J, dp),
-                         dp).div(torch.linalg.norm(dp, ord = 2));
+        J += torch::outer(df - torch::mv(J, dp),
+                         dp)::div(torch::linalg::norm(dp, ord = 2));
     }
     void torch_jacobian_update(int &p) {
-        torch::NoGradGuard no_grad;
-        J = torch::autograd::functional::jacobian(func, p);
+//        torch::NoGradGuard no_grad;
+//        J = torch::autograd::functional::jacobian(func, p);
+        // TODO
+        return;
 
     }
 
     void solve_for_dp() {
         torch::NoGradGuard no_grad;
-        JTW = torch.matmul(torch.transpose(J, 0, 1), W);
-        JTWJ = torch.matmul(JTW, J);
+        auto JTW = torch::matmul(torch::transpose(J, 0, 1), W);
+        auto JTWJ = torch::matmul(JTW, J);
 
-        dy = y_data - func(p);
-        dp = torch.linalg.solve(JTWJ
-                                     + self.lambda_lm * torch.diag(torch.diagonal(JTWJ)),
-                                     torch.mv(JTW, dy));
+        auto dy = y_data - func(p);
+        auto dp = torch::linalg::solve(JTWJ + lambda_lm * torch::diag(torch::diagonal(JTWJ)),torch::mv(JTW, dy));
     }
 
 
@@ -61,14 +60,10 @@ public:
 //        chi2 = y^T.W.y + 2 * y^T.W . y_hat +  (y-hat)^T.W.y_hat
 //
 //        '''
-        y_hat = self.func(p)
+        auto y_hat = func(p);
 
-        return torch.dot(self.y_data, torch.mv(self.W, self.y_data)) - 2 * torch.dot(self.y_data,
-                                                                                     torch.mv(self.W,
-                                                                                              y_hat)) + torch.dot(y_hat,
-                                                                                                                  torch.mv(
-                                                                                                                          self.W,
-                                                                                                                          y_hat))
+        return (torch::dot(y_data, torch::mv(W, y_data)) -2
+        * torch::dot(y_data, torch::mv(W, y_hat)) + torch::dot(y_hat, torch.mv(W,y_hat)));
     }
 
     void rho() {
@@ -98,19 +93,18 @@ public:
     }
 
 
-    void step(self, closure=None) {
+    void step() {
 
-        self.dp = 0
+        auto dp = 0;
 
-        self.solve_for_dp()
+        solve_for_dp();
 
-        if (self.rho())
-        {
+        if (rho()) {
             update_p(dp);
-            lambda_lm = torch.maximum(lambda_lm / lm_down, torch.tensor(1e-7));
+            lambda_lm = torch::maximum(lambda_lm / lm_down, torch::tensor(1e-7));
         }
         else
-        lambda_lm = torch.minimum(lambda_lm * lm_up, torch.tensor(1e7));
+            lambda_lm = torch::minimum(lambda_lm * lm_up, torch::tensor(1e7));
 
         if (iter_n % (2 * len(p)) == 0)
             broyden_jacobian_update();
@@ -124,6 +118,8 @@ public:
 
             return p;
         }
+        void condition1() {}
+        return;
     }
 
 private:
@@ -131,6 +127,15 @@ private:
     int y;
     int p;
     int func;
+    double eps1 = 1e-3;
+    double eps2 = 1e-3;
+    double eps3 =  1e-3;
+    double eps4 =  1e-3;
+    int lm_up = 11;
+    int lm_down = 9;
+    int lambda_lm = 10;
+    double sigma = 4.0;
+
 };
 
 
