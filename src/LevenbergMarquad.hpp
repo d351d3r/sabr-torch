@@ -2,9 +2,9 @@
 #define SABR_TORCH_LM_H
 
 
-class LM {
+class LevenbergMarquad {
 public:
-    LM(x,y,func) {
+    LevenbergMarquad(x,y,func) {
         this.x = x;
         this.y = y;
         this.func = func;
@@ -38,7 +38,7 @@ public:
     }
     void torch_jacobian_update(int &p) {
         torch::NoGradGuard no_grad;
-        J = torch.autograd.functional.jacobian(func, p);
+        J = torch::autograd::functional::jacobian(func, p);
 
     }
 

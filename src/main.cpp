@@ -1,95 +1,37 @@
 #include <torch/torch.h>
 #include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
 
-#define POLY_DEGREE 4
 
-static constexpr long double f(t,p) {
-    return p[0] * torch.exp(-t / p[1]) + p[2] * t * torch.exp(-t / p[3])
+// TODO Did't work
+#include "LevenbergMarquad.hpp"
+
+#include "sigma_SABR.hpp"
+
+
+// TODO Input function
+static double f(int t, int p) {
+    return p[0] * std::exp(-t / p[1]) + p[2] * t * std::exp(-t / p[3]);
 }
 
-// Builds features i.e. a matrix with columns [x, x^2, x^3, x^4].
-torch::Tensor make_features(torch::Tensor x) {
-    x = x.unsqueeze(1);
-    std::vector<torch::Tensor> xs;
-    for (int64_t i = 0; i < POLY_DEGREE; ++i)
-        xs.push_back(x.pow(i + 1));
-    return torch::cat(xs, 1);
-}
 
-// Approximated function.
-torch::Tensor f(
-        torch::Tensor x,
-        torch::Tensor W_target,
-        torch::Tensor b_target) {
-    return x.mm(W_target) + b_target.item();
-}
+static double K = torch::linspace(0.04, 0.11, 25),
+S = 0.06,
+T = 0.5,
+alpha = 0.037561,
+beta = 0.5,
+rho = 0.100044,
+nu = 0.573296;
 
-// Creates a string description of a polynomial.
-std::string poly_desc(torch::Tensor W, torch::Tensor b) {
-    auto size = W.size(0);
-    std::ostringstream stream;
-
-    stream << "y = ";
-    for (int64_t i = 0; i < size; ++i)
-        stream << W[i].item<float>() << " x^" << size - i << " ";
-    stream << "+ " << b[0].item<float>();
-    return stream.str();
-}
-
-// Builds a batch i.e. (x, f(x)) pair.
-std::pair<torch::Tensor, torch::Tensor> get_batch(
-        torch::Tensor W_target,
-        torch::Tensor b_target,
-        int64_t batch_size = 32) {
-    auto random = torch::randn({batch_size});
-    auto x = make_features(random);
-    auto y = f(x, W_target, b_target);
-    return std::make_pair(x, y);
-}
-
+//sigma_SABR
+//LevenbergMarquad lm();
 int main() {
-    auto W_target = torch::randn({POLY_DEGREE, 1}) * 5;
-    auto b_target = torch::randn({1}) * 5;
+    LevenbergMarquad(1,1,1);
+    auto true_p = torch::Tensor([20.0, 10.0, 1.0, 50.0]); // True parameteres
+    auto x_true = torch::linspace(0, 100, 25); // span of of free parameter
+    auto y_true = f(x_true, true_p); // fitted function observed values
 
-    // Define the model and optimizer
-    auto fc = torch::nn::Linear(W_target.size(0), 1);
-    torch::optim::SGD optim(fc->parameters(), .1);
-
-    float loss = 0;
-    int64_t batch_idx = 0;
-
-    while (++batch_idx) {
-        // Get data
-        torch::Tensor batch_x, batch_y;
-        std::tie(batch_x, batch_y) = get_batch(W_target, b_target);
-
-        // Reset gradients
-        optim.zero_grad();
-
-        // Forward pass
-        auto output = torch::smooth_l1_loss(fc(batch_x), batch_y);
-        loss = output.item<float>();
-
-        // Backward pass
-        output.backward();
-
-        // Apply gradients
-        optim.step();
-
-        // Stop criterion
-        if (loss < 1e-3f)
-            break;
-    }
-
-    std::cout << "Loss: " << loss << " after " << batch_idx << " batches"
-              << std::endl;
-    std::cout << "==> Learned function:\t"
-              << poly_desc(fc->weight.view({-1}), fc->bias) << std::endl;
-    std::cout << "==> Actual function:\t"
-              << poly_desc(W_target.view({-1}), b_target) << std::endl;
-
-    return 0;
+// TODO
+// init_p = true_p + torch.randn(4) * 2 ** 2 + 4  # initial guess for parametes = true + noise
+//modified_f = data_points(x_true)(f)  # wrapped function (dependent on only parameters)
+//    std::cout << "Initial guess for optimizer " << init_p << std::endl;
 }

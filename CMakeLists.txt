@@ -2,15 +2,15 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(sabr-torch)
 
 
-set(Torch_DIR "/Users/anatolii/project/cpp/sabr-torch/lib/libtorch;${Torch_DIR}")
-set(DCMAKE_PREFIX_PATH "/Users/anatolii/project/cpp/sabr-torch/lib/libtorch;${DCMAKE_PREFIX_PATH}")
+# set(Torch_DIR "/Users/anatolii/project/cpp/sabr-torch/lib/libtorch;${Torch_DIR}")
+# set(DCMAKE_PREFIX_PATH "/Users/anatolii/project/cpp/sabr-torch/lib/libtorch;${DCMAKE_PREFIX_PATH}")
 
-include_directories(lib/libtorch/include)
+# include_directories(lib/libtorch/include)
 
-list(
-        APPEND
-        CMAKE_PREFIX_PATH
-        ./lib/libtorch)
+#list(
+#        APPEND
+#        CMAKE_PREFIX_PATH
+#        ./lib/libtorch)
 
 find_package(Torch REQUIRED)
 
@@ -19,7 +19,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE_INIT "-O2")
 
 
-add_executable(sabr-torch src/main.cpp src/LevenbergMarquad.cpp src/LevenbergMarquad.h src/LevenbergMarquad.h src/sigma_SABR.cpp src/sigma_SABR.h src/LevenbergMarquad.h src/LM.h src/LM.h src/LM.h)
+add_executable(sabr-torch src/main.cpp src/sigma_SABR.hpp src/LevenbergMarquad.hpp)
 target_link_libraries(sabr-torch "${TORCH_LIBRARIES}")
 set_property(TARGET sabr-torch PROPERTY CXX_STANDARD 14)
 
