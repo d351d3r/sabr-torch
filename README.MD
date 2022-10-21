@@ -2,6 +2,7 @@
 ### Install repo
 ```shell
 $ git clone git@github.com:d351d3r/sabr-torch.git
+$ cd sabr-torch
 ```
 
 
