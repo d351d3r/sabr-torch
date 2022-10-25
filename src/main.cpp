@@ -1,6 +1,7 @@
 #include <torch/torch.h>
 #include <iostream>
-
+#include <list>
+#include <vector>
 
 // TODO Did't work
 #include "LevenbergMarquad.hpp"
@@ -10,7 +11,7 @@
 // TODO Input function
 // Need convert  return p[0] * torch.exp(-t / p[1]) + p[2] * t * torch.exp(-t / p[3])
 
-static double f(int t, int p) {
+static double f(int t, std::vector p) {
     return p[0] * std::exp(-t / p[1]) + p[2] * t * std::exp(-t / p[3]);
 }
 
@@ -31,10 +32,11 @@ int main() {
     auto x_true = torch::linspace(0, 100, 25); // span of of free parameter
     auto y_true = f(x_true, true_p); // fitted function observed values
 
-// TODO
-// init_p = true_p + torch.randn(4) * 2 ** 2 + 4  # initial guess for parametes = true + noise
-//modified_f = data_points(x_true)(f)  # wrapped function (dependent on only parameters)
-//    std::cout << "Initial guess for optimizer " << init_p << std::endl;
+    // TODO
+    auto init_p = true_p + pow((torch::randn(4) * 2), 2) + 4;
+/// // initial guess for parametes = true + noise
+    auto modified_f = func(x_true,f);  // wrapped function (dependent on only parameters)
+    //    std::cout << "Initial guess for optimizer " << init_p << std::endl;
 
 //TODO
     std::map<std::string,std::string> params = {'x': x_true,
