@@ -3,11 +3,16 @@
 
 #include <torch/torch.h>
 
+
 class LevenbergMarquad {
 public:
     LevenbergMarquad(torch::Tensor init_p,torch::Tensor x, torch::Tensor y, torch::Tensor func) {
 
-        int iter_n = 0;
+        static unsigned int iter_n = 0;
+        torch::Tensor eps1 = eps1;
+        torch::Tensor eps2 = eps2;
+        torch::Tensor eps3 = eps3;
+        torch::Tensor eps4 = eps4;
 
         // https://pytorch.org/cppdocs/api/function_namespaceat_1a095f3dd9bd82e1754ad607466e32d8e2.html?highlight=detach#_CPPv4N2at11detach_copyERKN2at6TensorE
         // https://pytorch.org/cppdocs/api/classat_1_1_tensor.html?highlight=requires_grad_#_CPPv4NK2at6Tensor14requires_grad_Eb
@@ -16,18 +21,19 @@ public:
         torch::requires_grad(true);
         {
             torch::NoGradGuard no_grad;
-            static torch::Tensor J = torch::autograd::grad(func, p);
+            //static torch::Tensor J = torch::autograd::grad(func, p);
+            const torch::autograd::variable_list J = torch::autograd::grad(func, p);
         }
         static torch::Tensor W = torch::diag(torch::Tensor((1 / pow(sigma, 2)) * len(x)));
     }
 
 // https://pytorch.org/cppdocs/api/typedef_namespacetorch_1abf2c764801b507b6a105664a2406a410.html?highlight=torch%20no_grad
-    void broyden_jacobian_update() {
+    void broyden_jacobian_update(torch::Tensor J,torch::Tensor dp) {
         torch::NoGradGuard no_grad;
 
         torch::Tensor df = func(p + dp) - func(p);
-        this->J += torch::outer(df - torch::mv(this->J, this->dp),
-                          this->dp)::div(torch::linalg::norm(dp, ord = 2));
+        J += torch::outer(df - torch::mv(J, dp),
+                          dp)::div(torch::linalg::norm(dp, ord = 2));
     }
 
     void torch_jacobian_update(torch::Tensor &p) {
@@ -83,7 +89,7 @@ public:
         p += dp;
     }
 
-    void step() {
+    void step(torch::Tensor J,torch::Tensor dp) {
 
         torch::Tensor dp = 0;
 
@@ -96,11 +102,11 @@ public:
             lambda_lm = torch::minimum(lambda_lm * lm_up, torch::Tensor(1e7));
 
         if (iter_n % (2 * len(p)) == 0)
-            broyden_jacobian_update();
+            broyden_jacobian_update(J,dp);
         else {
             p.requires_grad_(true);
             torch_jacobian_update(p);
-            iter_n += 1;
+            iter_n++;
             return p;
         }
 
@@ -115,14 +121,14 @@ private:
     torch::Tensor y;
     torch::Tensor p;
     torch::Tensor func;
-    torch::Tensor eps1 = 1e-3;
-    torch::Tensor eps2 = 1e-3;
-    torch::Tensor eps3 = 1e-3;
-    torch::Tensor eps4 = 1e-3;
-    torch::Tensor lm_up = 11;
-    torch::Tensor lm_down = 9;
-    torch::Tensor lambda_lm = 10;
-    torch::Tensor sigma = 4.0;
+    float eps1 = 1e-3;
+    float eps2 = 1e-3;
+    float eps3 = 1e-3;
+    float eps4 = 1e-3;
+    float lm_up = 11;
+    float lm_down = 9;
+    float lambda_lm = 10;
+    float sigma = 4.0;
 };
 
 #endif //SABR_TORCH_LM_H
