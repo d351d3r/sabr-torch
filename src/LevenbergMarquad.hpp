@@ -5,7 +5,7 @@
 
 class LevenbergMarquad {
 public:
-    LevenbergMarquad(torch::Tensor init_p,double x, double y, double func) {
+    LevenbergMarquad(torch::Tensor init_p,torch::Tensor x, torch::Tensor y, torch::Tensor func) {
 
         int iter_n = 0;
 
@@ -16,31 +16,21 @@ public:
         torch::requires_grad(true);
         {
             torch::NoGradGuard no_grad;
-            double J = torch::autograd::functional::jacobian(func, p);
+            static torch::Tensor J = torch::autograd::grad(func, p);
         }
-        double W = torch::diag(torch::tensor([1 / pow(sigma, 2)] * len(x)));
-        float lambda_lm = torch::tensor(lambda_lm);
-
-        double eps1 = torch::tensor(eps1);
-        double eps2 = torch::tensor(eps2);
-        double eps3 = torch::tensor(eps3);
-        double eps4 = torch::tensor(eps4);
-        double lm_up = torch::tensor(lm_up);
-        double lm_down = torch::tensor(lm_down);
-
+        static torch::Tensor W = torch::diag(torch::Tensor((1 / pow(sigma, 2)) * len(x)));
     }
 
 // https://pytorch.org/cppdocs/api/typedef_namespacetorch_1abf2c764801b507b6a105664a2406a410.html?highlight=torch%20no_grad
     void broyden_jacobian_update() {
         torch::NoGradGuard no_grad;
 
-        auto df = func(p + dp) - func(p);
-        J += torch::outer(df - torch::mv(J, dp),
-                          dp)
-        ::div(torch::linalg::norm(dp, ord = 2));
+        torch::Tensor df = func(p + dp) - func(p);
+        this->J += torch::outer(df - torch::mv(this->J, this->dp),
+                          this->dp)::div(torch::linalg::norm(dp, ord = 2));
     }
 
-    void torch_jacobian_update(int &p) {
+    void torch_jacobian_update(torch::Tensor &p) {
         //         Finite-difference Jacobian update
 //        torch::NoGradGuard no_grad;
 //        J = torch::autograd::functional::jacobian(func, p);
@@ -52,24 +42,24 @@ public:
     void solve_for_dp() {
         // Solver for optimizer step
         torch::NoGradGuard no_grad;
-        auto JTW = torch::matmul(torch::transpose(J, 0, 1), W);
-        auto JTWJ = torch::matmul(JTW, J);
+        static torch::Tensor JTW = torch::matmul(torch::transpose(J, 0, 1), this->W);
+        static torch::Tensor JTWJ = torch::matmul(JTW, J);
 
-        auto dy = y_data - func(p);
-        auto dp = torch::linalg::solve(JTWJ + lambda_lm * torch::diag(torch::diagonal(JTWJ)), torch::mv(JTW, dy));
+        torch::Tensor dy = y - func(p);
+        torch::Tensor dp = torch::linalg::solve(JTWJ + lambda_lm * torch::diag(torch::diagonal(JTWJ)), torch::mv(JTW, dy));
     }
 
 
-    void chi_2(int p) {
+    void chi_2(torch::Tensor p) {
         torch::NoGradGuard no_grad;
 //
 //        chi2 = y^T.W.y + 2 * y^T.W . y_hat +  (y-hat)^T.W.y_hat
 //
         auto y_hat = func(p);
 
-        return (torch::dot(y_data, torch::mv(W, y_data)) - 2
-                                                           * torch::dot(y_data, torch::mv(W, y_hat)) +
-                torch::dot(y_hat, torch.mv(W, y_hat)));
+        return (torch::dot(this->y, torch::mv(this->W, this->y)) - 2
+        * torch::dot(this->y, torch::mv(this->W, y_hat)) +
+        torch::dot(y_hat, torch::mv(this->W, y_hat)));
     }
 
     bool rho() {
@@ -77,33 +67,33 @@ public:
 
 //    rho =  chi2(p) - chi2(p + dp) / (dp)^T . ( lambda * diag(J^T W J).dp + J^T W . dy )
 
-        dy = y_data - func(p);
-        double i_rho = ((chi_2(p) - chi_2(p + dp)).div(torch::dot(dp, torch::mv(lambda_lm
+        dy = y - func(p);
+        double i_rho = ((chi_2(p) - chi_2(p + dp).div(torch::dot(dp, torch::mv(lambda_lm
                                                                                 * torch::diag(torch::diagonal(JTWJ)),
                                                                                 dp) + torch::mv(JTW, dy))));
 
-        if (i_rho > eps4)
+        if (i_rho > this->eps4)
             return true;
         else
             return false;
     }
 
-    void update_p(int dp) {
+    void update_p(const torch::Tensor& dp, torch::Tensor p) {
         torch::NoGradGuard no_grad;
         p += dp;
     }
 
     void step() {
 
-        auto dp = 0;
+        torch::Tensor dp = 0;
 
         solve_for_dp();
 
         if (rho()) {
             update_p(dp);
-            lambda_lm = torch::maximum(lambda_lm / lm_down, torch::tensor(1e-7));
+            lambda_lm = torch::maximum(lambda_lm / lm_down, torch::Tensor(1e-7));
         } else
-            lambda_lm = torch::minimum(lambda_lm * lm_up, torch::tensor(1e7));
+            lambda_lm = torch::minimum(lambda_lm * lm_up, torch::Tensor(1e7));
 
         if (iter_n % (2 * len(p)) == 0)
             broyden_jacobian_update();
@@ -121,18 +111,18 @@ public:
     }
 
 private:
-    int x;
-    int y;
+    torch::Tensor x;
+    torch::Tensor y;
     torch::Tensor p;
-    int func;
-    double eps1 = 1e-3;
-    double eps2 = 1e-3;
-    double eps3 = 1e-3;
-    double eps4 = 1e-3;
-    int lm_up = 11;
-    int lm_down = 9;
-    int lambda_lm = 10;
-    double sigma = 4.0;
+    torch::Tensor func;
+    torch::Tensor eps1 = 1e-3;
+    torch::Tensor eps2 = 1e-3;
+    torch::Tensor eps3 = 1e-3;
+    torch::Tensor eps4 = 1e-3;
+    torch::Tensor lm_up = 11;
+    torch::Tensor lm_down = 9;
+    torch::Tensor lambda_lm = 10;
+    torch::Tensor sigma = 4.0;
 };
 
 #endif //SABR_TORCH_LM_H

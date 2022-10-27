@@ -8,15 +8,15 @@
 
 class sigma_SABR {
 public:
-    sigma_SABR(K, p, S, beta, maturity) {
+    sigma_SABR(torch::TensorK, torch::Tensor p, torch::Tensor S, torch::Tensor beta, torch::Tensor maturity) {
         alpha, nu, rho = p
-        auto zeta = nu / alpha * (S * K) * *((1.0 - beta) / 2) * torch::log(S / K);
+        torch::Tensor zeta = nu / alpha * (S * K) * *((1.0 - beta) / 2) * torch::log(S / K);
 
-        auto numen = (1.0 + (((1 - beta) * *2 / 24) * alpha * *2 / ((S * K) * *(1 - beta))
+        torch::Tensor numen = (1.0 + (((1 - beta) * *2 / 24) * alpha * *2 / ((S * K) * *(1 - beta))
                              + (rho * beta * nu * alpha) / (4.0 * (S * K) * *((1 - beta) / 2))
                              + ((2 - 3 * rho * *2) / 24 * nu * *2)) * maturity);
 
-        auto denum = ((S * K) * *((1 - beta) / 2) *
+        torch::Tensor denum = ((S * K) * *((1 - beta) / 2) *
                       (1.0 + (1 - beta) * *2 / 24 * torch::log(S / K) * *2
                        + (1 - beta) * *4 / 1920 * torch::log(S / K) * *4));
 

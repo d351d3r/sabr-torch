@@ -27,18 +27,18 @@ static double K = torch::linspace(0.04, 0.11, 25),
 //sigma_SABR
 //LevenbergMarquad lm();
 int main() {
-    auto true_p = torch::Tensor([20.0, 10.0, 1.0, 50.0]); // True parameteres
-    auto x_true = torch::linspace(0, 100, 25); // span of of free parameter
-    auto y_true = f(x_true, true_p); // fitted function observed values
+    torch::Tensor true_p = torch::Tensor([20.0, 10.0, 1.0, 50.0]); // True parameteres
+    torch::Tensor x_true = torch::linspace(0, 100, 25); // span of of free parameter
+    torch::Tensor y_true = f(x_true, true_p); // fitted function observed values
 
     // TODO
-    auto init_p = true_p + pow((torch::randn(4) * 2), 2) + 4;
+    torch::Tensor init_p = true_p + pow((torch::randn(4) * 2), 2) + 4;
 /// // initial guess for parametes = true + noise
-    auto modified_f = func(x_true, f);  // wrapped function (dependent on only parameters)
+    torch::Tensor modified_f = func(x_true, f);  // wrapped function (dependent on only parameters)
     //    std::cout << "Initial guess for optimizer " << init_p << std::endl;
 
 
-    LevenbergMarquad lm(init_p,x_true, init_p, y_true, modified_f);
+    LevenbergMarquad lm(init_p,x_true, y_true, modified_f);
     for (int i = 0; i <= 1000; ++i)
         lm.step();
 
@@ -53,7 +53,7 @@ int main() {
     }
 
 //TODO: Sigma
-    auto K = torch::linspace(0.04, 0.11, 25);
+    torch::Tensor K = torch::linspace(0.04, 0.11, 25);
     double S = 0.06;
     double T = 0.5;
     double alpha = 0.037561;
@@ -61,9 +61,9 @@ int main() {
     double rho = 0.100044;
     double nu = 0.573296;
 
-    init_p = torch::tensor([0.1] * 3);
-    true_p = torch::tensor([alpha, nu, rho]);
-    auto y_mkt = sigma_SABR(K, true_p);
+    init_p = torch::Tensor([0.1] * 3);
+    true_p = torch::Tensor([alpha, nu, rho]);
+    torch::Tensor( y_mkt = sigma_SABR(K, true_p);
 
     modified_sabr = func(K, sigma_SABR);
 
