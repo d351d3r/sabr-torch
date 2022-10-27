@@ -1,16 +1,19 @@
 #ifndef SABR_TORCH_LM_H
 #define SABR_TORCH_LM_H
 
+#include <torch/torch.h>
 
 class LevenbergMarquad {
 public:
-    LevenbergMarquad(x, y, func, p, sigma) {
+    LevenbergMarquad(torch::Tensor init_p,double x, double y, double func) {
 
         int iter_n = 0;
 
         // https://pytorch.org/cppdocs/api/function_namespaceat_1a095f3dd9bd82e1754ad607466e32d8e2.html?highlight=detach#_CPPv4N2at11detach_copyERKN2at6TensorE
         // https://pytorch.org/cppdocs/api/classat_1_1_tensor.html?highlight=requires_grad_#_CPPv4NK2at6Tensor14requires_grad_Eb
-        int p = Tensor::detach_copy(p), torch::requires_grad();
+
+        p = torch::detach_copy(init_p);
+        torch::requires_grad(true);
         {
             torch::NoGradGuard no_grad;
             double J = torch::autograd::functional::jacobian(func, p);
@@ -21,9 +24,9 @@ public:
         double eps1 = torch::tensor(eps1);
         double eps2 = torch::tensor(eps2);
         double eps3 = torch::tensor(eps3);
-        double eps4 = torch.tensor(eps4);
-        double lm_up = torch.tensor(lm_up);
-        double lm_down = torch.tensor(lm_down);
+        double eps4 = torch::tensor(eps4);
+        double lm_up = torch::tensor(lm_up);
+        double lm_down = torch::tensor(lm_down);
 
     }
 
@@ -57,7 +60,7 @@ public:
     }
 
 
-    void chi_2(p) {
+    void chi_2(int p) {
         torch::NoGradGuard no_grad;
 //
 //        chi2 = y^T.W.y + 2 * y^T.W . y_hat +  (y-hat)^T.W.y_hat
@@ -85,7 +88,7 @@ public:
             return false;
     }
 
-    void update_p(dp) {
+    void update_p(int dp) {
         torch::NoGradGuard no_grad;
         p += dp;
     }
@@ -120,7 +123,7 @@ public:
 private:
     int x;
     int y;
-    int p;
+    torch::Tensor p;
     int func;
     double eps1 = 1e-3;
     double eps2 = 1e-3;

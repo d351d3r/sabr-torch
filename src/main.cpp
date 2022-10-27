@@ -38,7 +38,7 @@ int main() {
     //    std::cout << "Initial guess for optimizer " << init_p << std::endl;
 
 
-    LevenbergMarquad lm(x_true, init_p, y_true, modified_f);
+    LevenbergMarquad lm(init_p,x_true, init_p, y_true, modified_f);
     for (int i = 0; i <= 1000; ++i)
         lm.step();
 
