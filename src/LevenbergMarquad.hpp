@@ -4,7 +4,7 @@
 
 class LevenbergMarquad {
 public:
-    LevenbergMarquad(x, y, func, p, sigma, lambda_lm) {
+    LevenbergMarquad(x, y, func, p, sigma) {
 
         int iter_n = 0;
 
