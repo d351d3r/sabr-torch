@@ -9,7 +9,7 @@
 
 class sigma_SABR {
 public:
-    sigma_SABR(torch::Tensor K , torch::Tensor p, torch::Tensor S, torch::Tensor beta, torch::Tensor maturity) {
+    sigma_SABR(torch::Tensor K = torch::linspace(0.04, 0.11, 25), torch::Tensor p, torch::Tensor S = 0.06, torch::Tensor beta = 0.5, torch::Tensor maturity = 0.5) {
         alpha, nu, rho = p
         torch::Tensor zeta = nu / alpha * (S * K) * *((1.0 - beta) / 2) * torch::log(S / K);
 
@@ -29,7 +29,7 @@ public:
 private:
 
     torch::Tensor K = torch::linspace(0.04, 0.11, 25);
-    double S = 0.06;
+
     double T = 0.5;
     double alpha = 0.037561;
     double beta = 0.5;

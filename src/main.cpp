@@ -7,26 +7,17 @@
 #include "sigma_SABR.hpp"
 
 
-// TODO Input function
-// Need convert  return p[0] * torch.exp(-t / p[1]) + p[2] * t * torch.exp(-t / p[3])
+template <class Data>
+auto data_points(Data data) {
+  auto middle{[data](auto func){
+    return [data, func](auto... args) { return func(data, args...); };
+  }};
 
-static at::Tensor f(torch::Tensor t, torch::Tensor p) {
-    return p[0] * exp(-t / p[1]) + p[2] * t * exp(-t / p[3]);
+  return middle;
 }
 
-int data_points(data) {
-    // Wrapper for data points
-
-    void middle(func) {
-    
-        int wrapper(*args, **kwargs):
-            return func(data, *args, **kwargs);
-        return wrapper;
-    
-    }
-    
-    return middle;
-
+static torch::Tensor f(torch::Tensor t, torch::Tensor p) {
+    return p[0] * exp(-t / p[1]) + p[2] * t * exp(-t / p[3]);
 }
 
 static auto K = torch::linspace(0.04, 0.11, 25);
@@ -44,12 +35,26 @@ int main() {
     torch::Tensor x_true = torch::linspace(0, 100, 25); // span of free parameter
     torch::Tensor y_true = f(x_true, true_p); // fitted function observed values
 
-    // TODO
     torch::Tensor init_p = true_p + pow((torch::randn(4) * 2), 2) + 4;
 /// // initial guess for parametes = true + noise
-    torch::Tensor modified_f = f(x_true, f);  // wrapped function (dependent on only parameters)
-    //    std::cout << "Initial guess for optimizer " << init_p << std::endl;
+    auto modified_f = data_points(x_true)(f);  // wrapped function (dependent on only parameters)
+    std::cout << "Initial guess for optimizer " << init_p << std::endl;
 
+// params = { 'x' : x_true,
+//            'init_p': init_p,
+//            'y' : y_true,
+//            'func' : modified_f,  # model to be fitted
+//            'sigma' : 4.0,    # std of datapoint
+//            'lambda_lm' : 10, # starting lambda
+//            'eps1' : 1e-3,    
+//            'eps2' : 1e-3,
+//            'eps3' : 1e-3,
+//            'eps4' : 1e-3,
+//            'lm_up' : 11,     # up coefficient
+//            'lm_down' : 9     # down coefficient
+//            }
+
+//     LevenbergMarquad lm(params)     
 
     LevenbergMarquad lm(init_p,x_true, y_true, modified_f);
     for (int i = 0; i <= 1000; ++i)
@@ -78,7 +83,7 @@ int main() {
     true_p = torch::Tensor([alpha, nu, rho]);
     torch::Tensor( y_mkt = sigma_SABR(K, true_p);
 
-    modified_sabr = func(K, sigma_SABR);
+    auto modified_sabr = data_points(K),(sigma_SABR);
 
 
     LevenbergMarquad lm_sigma(x_true, init_p, y_true, modified_f);
