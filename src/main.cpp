@@ -11,12 +11,12 @@
 // TODO Input function
 // Need convert  return p[0] * torch.exp(-t / p[1]) + p[2] * t * torch.exp(-t / p[3])
 
-static double f(int t, std::vector p) {
+static float f(int t, std::vector p) {
     return p[0] * std::exp(-t / p[1]) + p[2] * t * std::exp(-t / p[3]);
 }
 
 
-static double K = torch::linspace(0.04, 0.11, 25),
+static float K = torch::linspace(0.04, 0.11, 25),
         S = 0.06,
         T = 0.5,
         alpha = 0.037561,
@@ -28,7 +28,7 @@ static double K = torch::linspace(0.04, 0.11, 25),
 //LevenbergMarquad lm();
 int main() {
     torch::Tensor true_p = torch::Tensor([20.0, 10.0, 1.0, 50.0]); // True parameteres
-    torch::Tensor x_true = torch::linspace(0, 100, 25); // span of of free parameter
+    torch::Tensor x_true = torch::linspace(0, 100, 25); // span of free parameter
     torch::Tensor y_true = f(x_true, true_p); // fitted function observed values
 
     // TODO
@@ -54,12 +54,12 @@ int main() {
 
 //TODO: Sigma
     torch::Tensor K = torch::linspace(0.04, 0.11, 25);
-    double S = 0.06;
-    double T = 0.5;
-    double alpha = 0.037561;
-    double beta = 0.5;
-    double rho = 0.100044;
-    double nu = 0.573296;
+    float S = 0.06;
+    float T = 0.5;
+    float alpha = 0.037561;
+    float beta = 0.5;
+    float rho = 0.100044;
+    float nu = 0.573296;
 
     init_p = torch::Tensor([0.1] * 3);
     true_p = torch::Tensor([alpha, nu, rho]);
@@ -71,5 +71,4 @@ int main() {
     LevenbergMarquad lm_sigma(x_true, init_p, y_true, modified_f);
     for (int i = 0; i <= 1000; ++i)
         lm.step();
-
 }

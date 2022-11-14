@@ -3,16 +3,21 @@
 
 #include <torch/torch.h>
 
+template <typename T>
+int length(T n) {
+    int l = 0;
+    do {
+        l++;
+        n /= 10;
+    } while(n);
+    return l;
+}
 
 class LevenbergMarquad {
 public:
     LevenbergMarquad(torch::Tensor init_p,torch::Tensor x, torch::Tensor y, torch::Tensor func) {
 
-        static unsigned int iter_n = 0;
-        torch::Tensor eps1 = eps1;
-        torch::Tensor eps2 = eps2;
-        torch::Tensor eps3 = eps3;
-        torch::Tensor eps4 = eps4;
+          unsigned int iter_n = 0;
 
         // https://pytorch.org/cppdocs/api/function_namespaceat_1a095f3dd9bd82e1754ad607466e32d8e2.html?highlight=detach#_CPPv4N2at11detach_copyERKN2at6TensorE
         // https://pytorch.org/cppdocs/api/classat_1_1_tensor.html?highlight=requires_grad_#_CPPv4NK2at6Tensor14requires_grad_Eb
@@ -21,10 +26,10 @@ public:
         torch::requires_grad(true);
         {
             torch::NoGradGuard no_grad;
-            //static torch::Tensor J = torch::autograd::grad(func, p);
-            const torch::autograd::variable_list J = torch::autograd::grad(func, p);
+            torch::Tensor J = torch::autograd::grad(func, p);
+            const torch::autograd::variable_list J = torch::autograd::grad(const std::vector<at::Tensor> &func, p);
         }
-        static torch::Tensor W = torch::diag(torch::Tensor((1 / pow(sigma, 2)) * len(x)));
+        torch::Tensor W = torch::diag(torch::Tensor((1 / pow(sigma, 2)) * length(x)));
     }
 
 // https://pytorch.org/cppdocs/api/typedef_namespacetorch_1abf2c764801b507b6a105664a2406a410.html?highlight=torch%20no_grad
@@ -32,8 +37,7 @@ public:
         torch::NoGradGuard no_grad;
 
         torch::Tensor df = func(p + dp) - func(p);
-        J += torch::outer(df - torch::mv(J, dp),
-                          dp)::div(torch::linalg::norm(dp, ord = 2));
+        J += torch::outer(df - torch::mv(J, dp),dp)::div(torch::linalg::norm(dp, ord = 2));
     }
 
     void torch_jacobian_update(torch::Tensor &p) {
@@ -56,25 +60,25 @@ public:
     }
 
 
-    void chi_2(torch::Tensor p) {
+    void chi_2(torch::Tensor p,torch::Tensor& W,torch::Tensor& y) {
         torch::NoGradGuard no_grad;
 //
 //        chi2 = y^T.W.y + 2 * y^T.W . y_hat +  (y-hat)^T.W.y_hat
 //
         auto y_hat = func(p);
 
-        return (torch::dot(this->y, torch::mv(this->W, this->y)) - 2
-        * torch::dot(this->y, torch::mv(this->W, y_hat)) +
-        torch::dot(y_hat, torch::mv(this->W, y_hat)));
+        return (torch::dot(y, torch::mv(W, y)) - 2
+        * torch::dot(y, torch::mv(W, y_hat)) +
+        torch::dot(y_hat, torch::mv(W, y_hat)));
     }
 
-    bool rho() {
+    bool rho(torch::Tensor W,torch::Tensor y,torch::Tensor dp, torch::Tensor JTWJ) {
         torch::NoGradGuard no_grad;
 
 //    rho =  chi2(p) - chi2(p + dp) / (dp)^T . ( lambda * diag(J^T W J).dp + J^T W . dy )
 
         dy = y - func(p);
-        double i_rho = ((chi_2(p) - chi_2(p + dp).div(torch::dot(dp, torch::mv(lambda_lm
+        float i_rho = ((chi_2(p,W,y) - chi_2(p + dp,W,y).div(torch::dot(dp, torch::mv(lambda_lm
                                                                                 * torch::diag(torch::diagonal(JTWJ)),
                                                                                 dp) + torch::mv(JTW, dy))));
 
@@ -91,7 +95,7 @@ public:
 
     void step(torch::Tensor J,torch::Tensor dp) {
 
-        torch::Tensor dp = 0;
+        dp = 0;
 
         solve_for_dp();
 
