@@ -17,7 +17,7 @@ class LevenbergMarquad {
 public:
     LevenbergMarquad(torch::Tensor init_p,torch::Tensor x, torch::Tensor y, torch::Tensor func) {
 
-          unsigned int iter_n = 0;
+        unsigned int iter_n = 0;
 
         // https://pytorch.org/cppdocs/api/function_namespaceat_1a095f3dd9bd82e1754ad607466e32d8e2.html?highlight=detach#_CPPv4N2at11detach_copyERKN2at6TensorE
         // https://pytorch.org/cppdocs/api/classat_1_1_tensor.html?highlight=requires_grad_#_CPPv4NK2at6Tensor14requires_grad_Eb
@@ -26,10 +26,10 @@ public:
         torch::requires_grad(true);
         {
             torch::NoGradGuard no_grad;
-            torch::Tensor J = torch::autograd::grad(func, p);
-            const torch::autograd::variable_list J = torch::autograd::grad(const std::vector<at::Tensor> &func, p);
+            auto J = torch::autograd::grad(func, p);
+            const torch::autograd::variable_list J = torch::autograd::grad(func, p);
         }
-        torch::Tensor W = torch::diag(torch::Tensor((1 / pow(sigma, 2)) * length(x)));
+        auto W = torch::diag(static_cast<torch::Tensor>((1 / pow(sigma, 2)) * length(x)));
     }
 
 // https://pytorch.org/cppdocs/api/typedef_namespacetorch_1abf2c764801b507b6a105664a2406a410.html?highlight=torch%20no_grad
@@ -93,9 +93,7 @@ public:
         p += dp;
     }
 
-    void step(torch::Tensor J,torch::Tensor dp) {
-
-        dp = 0;
+    void step() {
 
         solve_for_dp();
 

@@ -1,3 +1,6 @@
 /lib/libtorch/
 /build/
 /cmake-build-debug/
+/CmakeFiles/
+/.vscode/
+/.idea/

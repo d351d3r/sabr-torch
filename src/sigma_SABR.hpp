@@ -5,10 +5,11 @@
 #ifndef SABR_TORCH_SIGMA_SABR_H
 #define SABR_TORCH_SIGMA_SABR_H
 
+#include <torch/torch.h>
 
 class sigma_SABR {
 public:
-    sigma_SABR(torch::TensorK, torch::Tensor p, torch::Tensor S, torch::Tensor beta, torch::Tensor maturity) {
+    sigma_SABR(torch::Tensor K , torch::Tensor p, torch::Tensor S, torch::Tensor beta, torch::Tensor maturity) {
         alpha, nu, rho = p
         torch::Tensor zeta = nu / alpha * (S * K) * *((1.0 - beta) / 2) * torch::log(S / K);
 
@@ -27,7 +28,7 @@ public:
 
 private:
 
-    auto K = torch::linspace(0.04, 0.11, 25);
+    torch::Tensor K = torch::linspace(0.04, 0.11, 25);
     double S = 0.06;
     double T = 0.5;
     double alpha = 0.037561;

@@ -3,7 +3,6 @@
 #include <list>
 #include <vector>
 
-// TODO Did't work
 #include "LevenbergMarquad.hpp"
 #include "sigma_SABR.hpp"
 
@@ -11,13 +10,27 @@
 // TODO Input function
 // Need convert  return p[0] * torch.exp(-t / p[1]) + p[2] * t * torch.exp(-t / p[3])
 
-static float f(int t, std::vector p) {
-    return p[0] * std::exp(-t / p[1]) + p[2] * t * std::exp(-t / p[3]);
+static at::Tensor f(torch::Tensor t, torch::Tensor p) {
+    return p[0] * exp(-t / p[1]) + p[2] * t * exp(-t / p[3]);
 }
 
+int data_points(data) {
+    // Wrapper for data points
 
-static float K = torch::linspace(0.04, 0.11, 25),
-        S = 0.06,
+    void middle(func) {
+    
+        int wrapper(*args, **kwargs):
+            return func(data, *args, **kwargs);
+        return wrapper;
+    
+    }
+    
+    return middle;
+
+}
+
+static auto K = torch::linspace(0.04, 0.11, 25);
+        float S = 0.06,
         T = 0.5,
         alpha = 0.037561,
         beta = 0.5,
@@ -27,14 +40,14 @@ static float K = torch::linspace(0.04, 0.11, 25),
 //sigma_SABR
 //LevenbergMarquad lm();
 int main() {
-    torch::Tensor true_p = torch::Tensor([20.0, 10.0, 1.0, 50.0]); // True parameteres
+    torch::Tensor true_p = torch::randn({20, 10, 1, 50}); // True parameteres
     torch::Tensor x_true = torch::linspace(0, 100, 25); // span of free parameter
     torch::Tensor y_true = f(x_true, true_p); // fitted function observed values
 
     // TODO
     torch::Tensor init_p = true_p + pow((torch::randn(4) * 2), 2) + 4;
 /// // initial guess for parametes = true + noise
-    torch::Tensor modified_f = func(x_true, f);  // wrapped function (dependent on only parameters)
+    torch::Tensor modified_f = f(x_true, f);  // wrapped function (dependent on only parameters)
     //    std::cout << "Initial guess for optimizer " << init_p << std::endl;
 
 
@@ -47,8 +60,8 @@ int main() {
     std::list<float> lmbd;
 
     for (int i = 0; i < 10; i++) {
-        p.push_back(float(torch::linalg::norm(lm.step(), ord = 2)));
-        p_hat.push_back(float(torch::linalg::norm(lm.p - true_p, ord = 2)));
+        p.push_back(float(torch::linalg::norm(lm.step(),2)));
+        p_hat.push_back(float(torch::linalg::norm(lm.p - true_p, auto opt_ord = 2)));
         lmbd.push_back(lm.lambda_lm);
     }
 
@@ -61,7 +74,7 @@ int main() {
     float rho = 0.100044;
     float nu = 0.573296;
 
-    init_p = torch::Tensor([0.1] * 3);
+    init_p = torch::Tensor{[0.1] * 3};
     true_p = torch::Tensor([alpha, nu, rho]);
     torch::Tensor( y_mkt = sigma_SABR(K, true_p);
 
