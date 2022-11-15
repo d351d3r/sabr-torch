@@ -28,8 +28,6 @@ static auto K = torch::linspace(0.04, 0.11, 25);
         rho = 0.100044,
         nu = 0.573296;
 
-//sigma_SABR
-//LevenbergMarquad lm();
 int main() {
     torch::Tensor true_p = torch::randn({20, 10, 1, 50}); // True parameteres
     torch::Tensor x_true = torch::linspace(0, 100, 25); // span of free parameter
@@ -56,7 +54,7 @@ int main() {
 
 //     LevenbergMarquad lm(params)     
 
-    LevenbergMarquad lm(init_p,x_true, y_true, modified_f);
+    LevenbergMarquad lm(init_p,x_true, y_true, modified_f,4.0,10,1e-3,1e-3,1e-3,1e-3);
     for (int i = 0; i <= 1000; ++i)
         lm.step();
 
@@ -79,9 +77,9 @@ int main() {
     float rho = 0.100044;
     float nu = 0.573296;
 
-    init_p = torch::Tensor{[0.1] * 3};
-    true_p = torch::Tensor([alpha, nu, rho]);
-    torch::Tensor( y_mkt = sigma_SABR(K, true_p);
+    init_p = torch::randn({0.1*3});
+    true_p = torch::randn([alpha, nu, rho]);
+    torch::Tensor(y_mkt = sigma_SABR(K, true_p);
 
     auto modified_sabr = data_points(K),(sigma_SABR);
 

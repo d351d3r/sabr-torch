@@ -7,10 +7,10 @@ project(sabr-torch)
 
 # include_directories(lib/libtorch/include)
 
-#list(
-#        APPEND
-#        CMAKE_PREFIX_PATH
-#        ./lib/libtorch)
+# list(
+#         APPEND
+#         CMAKE_PREFIX_PATH
+#         ./lib/libtorch)
 
 find_package(Torch REQUIRED)
 

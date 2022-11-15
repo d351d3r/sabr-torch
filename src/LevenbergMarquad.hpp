@@ -15,7 +15,9 @@ int length(T n) {
 
 class LevenbergMarquad {
 public:
-    LevenbergMarquad(torch::Tensor init_p,torch::Tensor x, torch::Tensor y, torch::Tensor func) {
+    LevenbergMarquad(torch::Tensor& init_p,torch::Tensor& x, torch::Tensor& y, 
+    torch::Tensor& func,torch::Tensor eps1,torch::Tensor eps2,torch::Tensor eps3,torch::Tensor eps4,
+    torch::Tensor lm_up,torch::Tensor lm_down) {
 
         unsigned int iter_n = 0;
 
